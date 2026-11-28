@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>WEEX 真錢交易台</title>
+<style>
+:root{--bg:#0b0e11;--card:#181a20;--card2:#1e2329;--line:#2b3139;--txt:#eaecef;--mut:#848e9c;--dim:#5e6673;--up:#0ecb81;--dn:#f6465d;--acc:#f0b90b;
+ --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Noto Sans TC",sans-serif;--mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace}
+body.rev{--up:#f6465d;--dn:#0ecb81}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{padding:max(12px,env(safe-area-inset-top)) 12px 40px}
+.wrap{max-width:980px;margin:0 auto}
+.num{font-variant-numeric:tabular-nums;font-family:var(--mono);letter-spacing:-.01em}
+.up{color:var(--up)}.dn{color:var(--dn)}.fl{color:var(--txt)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 2px 14px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px}
+.brand i{width:8px;height:18px;background:var(--acc);border-radius:2px;display:inline-block}
+.brand small{color:var(--mut);font-weight:500;font-size:12px}
+.brand span{white-space:nowrap}
+@media(max-width:520px){.brand small{display:none}.kpi .v{font-size:17px}}
+.right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.dot.on{background:var(--up);animation:p 1.8s ease-out infinite}.dot.wait{background:var(--acc)}.dot.off{background:var(--dn)}
+@keyframes p{0%{box-shadow:0 0 0 0 rgba(14,203,129,.55)}100%{box-shadow:0 0 0 8px rgba(14,203,129,0)}}
+button.pill{cursor:pointer;font-family:inherit}
+.grid{display:grid;gap:12px}
+@media(min-width:760px){.hero{grid-template-columns:1.25fr 1fr}.kpis{grid-template-columns:repeat(4,1fr)!important}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.lbl{font-size:12px;color:var(--mut);margin-bottom:6px}
+.eq{font-size:clamp(40px,11vw,58px);font-weight:700;line-height:1;letter-spacing:-.04em}
+.chg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:14px}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--card2)}
+.chip.up{background:rgba(14,203,129,.14)}.chip.dn{background:rgba(246,70,93,.14)}
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mini .v{font-size:20px;font-weight:650}
+.mini .s{font-size:12px;color:var(--mut);margin-top:3px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+.kpi .v{font-size:20px;font-weight:650}.kpi .s{font-size:12px;color:var(--mut);margin-top:3px}
+.sec{margin-top:12px}
+.sh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.seg{display:inline-flex;background:var(--card2);border-radius:8px;padding:2px}
+.seg button{all:unset;cursor:pointer;font-size:12px;color:var(--mut);padding:5px 12px;border-radius:6px}
+.seg button.on{background:var(--line);color:var(--txt)}
+.tabs{display:flex;gap:20px;border-bottom:1px solid var(--line);margin:18px 2px 12px;overflow-x:auto}
+.tabs button{all:unset;cursor:pointer;padding:10px 0;font-size:14px;color:var(--mut);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--txt);border-color:var(--acc);font-weight:600}
+.chartbox{position:relative}
+svg{display:block;width:100%}
+.tip{position:absolute;top:0;pointer-events:none;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;display:none;white-space:nowrap}
+.cm{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:8px}.cm b{color:var(--txt);font-weight:600}
+.pc{margin-bottom:12px;padding:0;overflow:hidden;border-left:3px solid var(--dim)}
+.pc.long{border-left-color:var(--up)}.pc.short{border-left-color:var(--dn)}
+.pc-h{display:flex;justify-content:space-between;gap:10px;padding:14px 16px 6px;align-items:flex-start}
+.sym{font-size:18px;font-weight:700}
+.tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.tag{font-size:11px;padding:2px 6px;border-radius:4px;background:var(--card2);color:var(--mut)}
+.tag.long{color:var(--up);background:rgba(14,203,129,.14)}.tag.short{color:var(--dn);background:rgba(246,70,93,.14)}
+.pnl{text-align:right}.pnl .v{font-size:22px;font-weight:700}.pnl .s{font-size:13px;margin-top:2px}
+.ladder{position:relative;height:6px;border-radius:3px;margin:14px 16px 4px;background:linear-gradient(90deg,rgba(246,70,93,.45) 0 33.3%,rgba(132,142,156,.25) 33.3% 100%)}
+.ladder .m{position:absolute;top:-4px;width:3px;height:14px;background:var(--txt);border-radius:2px;transform:translateX(-1px)}
+.ladder .e{position:absolute;top:-2px;left:33.3%;width:1px;height:10px;background:var(--mut)}
+.lg{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin:0 16px 8px}
+.pf{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line)}
+.pf>div{background:var(--card);padding:10px 14px}.pf .k{font-size:11px;color:var(--mut);margin-bottom:3px}.pf .x{font-size:13px;font-weight:600}
+@media(min-width:760px){.pf{grid-template-columns:repeat(4,1fr)}}
+.empty{color:var(--mut);font-size:14px;text-align:center;padding:28px 12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-weight:500;color:var(--mut);text-align:right;padding:8px 10px;font-size:12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+.tw{overflow-x:auto;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+tr:last-child td{border-bottom:0}
+.sub{color:var(--mut);font-size:11px;display:block;margin-top:2px}
+.bar{height:6px;background:var(--card2);border-radius:3px;overflow:hidden;margin-top:8px}.bar>i{display:block;height:100%;background:var(--acc)}
+.rg{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:760px){.rg{grid-template-columns:repeat(4,1fr)}}
+.rg .v{font-size:16px;font-weight:650}.rg .s{font-size:12px;color:var(--mut);margin-top:3px}
+footer{margin-top:22px;font-size:12px;color:var(--dim);line-height:1.6;text-align:center}
+.warn{background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.3);color:var(--acc);border-radius:10px;padding:9px 12px;font-size:13px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top">
+  <div class="brand"><i></i><span>WEEX 真錢交易台</span><small>永續合約 · 全帳戶</small></div>
+  <div class="right">
+   <button class="pill" id="clr" title="切換漲跌顏色">綠漲紅跌</button>
+   <span class="pill"><span id="dot" class="dot"></span><span id="st">讀取中</span></span>
+  </div>
+ </div>
+ <div id="warn" class="warn" hidden></div>
+
+ <div class="grid hero">
+  <div class="card">
+   <div class="lbl">帳戶權益 (USDT)</div>
+   <div id="eq" class="eq num">—</div>
+   <div class="chg num"><span id="tot"></span><span id="totp" class="chip"></span><span id="base" style="color:var(--mut)"></span></div>
+  </div>
+  <div class="card mini">
+   <div><div class="lbl">今日盈虧</div><div id="today" class="v num">—</div><div id="todays" class="s"></div></div>
+   <div><div class="lbl">未實現盈虧</div><div id="unr" class="v num">—</div><div id="unrs" class="s"></div></div>
+   <div><div class="lbl">已實現累計</div><div id="real" class="v num">—</div><div id="reals" class="s"></div></div>
+   <div><div class="lbl">使用保證金</div><div id="mg" class="v num">—</div><div id="mgs" class="s"></div></div>
+  </div>
+ </div>
+
+ <div class="card sec">
+  <div class="sh"><div class="lbl" style="margin:0">權益曲線</div>
+   <div class="seg" id="per"><button data-p="1">1日</button><button data-p="7">7日</button><button data-p="0" class="on">全部</button></div></div>
+  <div class="chartbox" id="cb"><svg id="ch" height="180"></svg><div class="tip" id="tip"></div></div>
+  <div class="cm" id="cm"></div>
+ </div>
+
+ <div class="kpis" id="kpis"></div>
+
+ <div class="tabs" id="tabs">
+  <button data-t="pos" class="on">持倉</button><button data-t="hist">成交紀錄</button><button data-t="bars">逐單盈虧</button><button data-t="risk">風控</button>
+ </div>
+ <div id="v-pos"></div>
+ <div id="v-hist" hidden></div>
+ <div id="v-bars" hidden></div>
+ <div id="v-risk" hidden></div>
+
+ <footer id="foot"></footer>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let J=null,period=0,tab="pos";
+const F=(n,d=2)=>n==null||isNaN(n)?"—":Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const S=(n,d=2)=>n==null||isNaN(n)?"—":(n>0?"+":n<0?"−":"")+F(Math.abs(n),d);
+const cl=n=>n>0.004?"up":n<-0.004?"dn":"fl";
+const P=(n,d=1)=>n==null||isNaN(n)?"—":(n>0?"+":n<0?"−":"")+Math.abs(n).toFixed(d)+"%";
+const px=n=>n==null?"—":F(n,n>=1000?2:n>=10?3:n>=1?4:5);
+const sideZh=s=>s==="long"?"做多":s==="short"?"做空":s;
+const dur=m=>m==null?"—":m<60?m+"分":m<1440?Math.floor(m/60)+"時"+(m%60?m%60+"分":""):Math.floor(m/1440)+"日"+Math.floor(m%1440/60)+"時";
+const tm=t=>t?String(t).slice(5,16).replace("T"," ").replace("-","/"):"—";
+function why(r){r=r||"";
+ if(/exchange stop/i.test(r))return"交易所止蝕/止盈";const m=r.match(/time stop (\d+)/);if(m)return"時間止損 "+m[1]+"分";
+ if(/kill/i.test(r))return"停機全平";if(/stop_failed/i.test(r))return"止蝕失敗平倉";if(/qty sanity/i.test(r))return"數量檢查平倉";return r||"—";}
+function setStatus(j,stale){const d=$("dot"),s=$("st"),b=j.bot||{};
+ if(b.halted){d.className="dot off";s.textContent="已停機";return}
+ if(!b.running){d.className="dot off";s.textContent="未運行";return}
+ if(stale){d.className="dot wait";s.textContent="資料過舊";return}
+ d.className="dot on";s.textContent=(b.status||"").indexOf("day-stop")>=0?"日停・只管理持倉":(j.positions||[]).length?"運行中・持倉中":"運行中・等訊號";}
+function curve(j){const c=(j.equity_curve||[]).map(p=>({t:Date.parse(p.t),eq:+p.eq,s:p.t})).filter(p=>isFinite(p.t)&&isFinite(p.eq));
+ if(period){const lim=Date.now()-period*864e5;const f=c.filter(p=>p.t>=lim);return f.length?f:c.slice(-1)}return c}
+function draw(){if(!J)return;const svg=$("ch"),W=svg.clientWidth||320,H=180,pl=6,pr=52,pt=10,pb=18;
+ const c=curve(J),base=J.baseline;
+ if(!c.length){svg.innerHTML="";return}
+ let pts=c.slice();if(pts.length===1)pts.unshift({t:pts[0].t-6e4,eq:pts[0].eq,s:pts[0].s});
+ const ys=pts.map(p=>p.eq).concat([base]);let lo=Math.min(...ys),hi=Math.max(...ys);if(hi-lo<2){lo-=1.5;hi+=1.5}const pad=(hi-lo)*.12;lo-=pad;hi+=pad;
+ const t0=pts[0].t,t1=pts[pts.length-1].t,x=t=>pl+(t-t0)/Math.max(t1-t0,1)*(W-pl-pr),y=v=>pt+(hi-v)/(hi-lo)*(H-pt-pb);
+ const last=pts[pts.length-1].eq,col=last>=base?"var(--up)":"var(--dn)";
+ const d=pts.map((p,i)=>(i?"L":"M")+x(p.t).toFixed(1)+","+y(p.eq).toFixed(1)).join("");
+ let g="";for(let i=0;i<=3;i++){const v=lo+(hi-lo)*i/3;g+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="#2b3139" stroke-width="1" opacity=".6"/><text x="${W-pr+6}" y="${y(v)+4}" fill="#848e9c" font-size="10" font-family="ui-monospace,monospace">${F(v,2)}</text>`}
+ svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+ svg.innerHTML=g+`<line x1="${pl}" x2="${W-pr}" y1="${y(base)}" y2="${y(base)}" stroke="#f0b90b" stroke-width="1" stroke-dasharray="4 4" opacity=".8"/><text x="${pl+2}" y="${y(base)-4}" fill="#f0b90b" font-size="10">起始 ${F(base,2)}</text>
+ <path d="${d}L${x(t1)},${H-pb}L${x(t0)},${H-pb}Z" fill="${col}" opacity=".10"/><path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>
+ <circle cx="${x(t1)}" cy="${y(last)}" r="4" fill="${col}"/><line id="xh" y1="${pt}" y2="${H-pb}" stroke="#848e9c" stroke-width="1" opacity="0"/>`;
+ svg.onpointermove=e=>{const r=svg.getBoundingClientRect(),mx=e.clientX-r.left;let b=pts[0],bd=1e9;pts.forEach(p=>{const dd=Math.abs(x(p.t)-mx);if(dd<bd){bd=dd;b=p}});
+  const xh=$("xh");xh.setAttribute("x1",x(b.t));xh.setAttribute("x2",x(b.t));xh.setAttribute("opacity",1);
+  const tp=$("tip");tp.style.display="block";tp.innerHTML=`<span class="num">$${F(b.eq)}</span> <span style="color:var(--mut)">${tm(b.s)}</span>`;tp.style.left=Math.min(Math.max(x(b.t)-60,0),W-170)+"px"};
+ svg.onpointerleave=()=>{$("tip").style.display="none";const xh=$("xh");if(xh)xh.setAttribute("opacity",0)};
+ const s=J.stats||{};$("cm").innerHTML=`<span>最高 <b class="num">$${F(s.peak)}</b></span><span>最大回撤 <b class="num dn">${s.mdd_pct?F(s.mdd_pct,2)+"%":"0.00%"}</b></span><span>資料點 <b>${c.length}</b></span>`}
+function kp(l,v,s,c){return`<div class="card kpi"><div class="lbl">${l}</div><div class="v num ${c||""}">${v}</div><div class="s">${s||""}</div></div>`}
+function render(j){J=j;const eq=j.equity,b=j.baseline,s=j.stats||{};
+ $("eq").textContent="$"+F(eq);$("eq").className="eq num "+cl(eq-b);
+ $("tot").innerHTML=`<span class="${cl(j.pnl_total)}">${S(j.pnl_total)}</span>`;$("totp").textContent=P(j.pnl_total_pct,2);$("totp").className="chip "+cl(j.pnl_total);
+ $("base").textContent="起始 $"+F(b);
+ $("today").textContent=S(j.pnl_today);$("today").className="v num "+cl(j.pnl_today);$("todays").textContent=(s.trades_today||0)+" 單平倉";
+ $("unr").textContent=S(j.unrealized);$("unr").className="v num "+cl(j.unrealized);$("unrs").textContent=(j.positions||[]).length+" 張持倉";
+ $("real").textContent=S(j.realized);$("real").className="v num "+cl(j.realized);$("reals").textContent="扣費後淨額";
+ $("mg").textContent="$"+F(j.margin_in_use);$("mgs").textContent=eq?F(100*j.margin_in_use/eq,0)+"% 權益":"";
+ const wr=j.win_rate;
+ $("kpis").innerHTML=kp("勝率",wr==null?"—":wr.toFixed(1)+"%",j.wins+" / "+j.closed+" 單")+kp("盈虧因子",s.profit_factor==null?"—":s.profit_factor.toFixed(2),"總盈 ÷ 總虧")
+  +kp("平均每單",S(s.avg_pnl),"均盈 "+S(s.avg_win)+" · 均虧 "+S(s.avg_loss),cl(s.avg_pnl))+kp("最大回撤",s.mdd_pct?F(s.mdd_pct,2)+"%":"0.00%","自起始計","dn")
+  +kp("最佳 / 最差",S(s.best)+" / "+S(s.worst),"單筆淨盈虧")+kp("手續費","$"+F(j.fees),"已付累計")+kp("交易日",String(s.trading_days||0),"今日 "+(s.trades_today||0)+" 單")+kp("最後成交",s.last_trade?tm(s.last_trade):"—","多倫多時間");
+ renderPos(j);renderHist(j);renderBars(j);renderRisk(j);draw();
+ const stale=Date.now()-Date.parse(j.updated)>((j.positions||[]).length?120e3:6*60e3);setStatus(j,stale);
+ const w=$("warn");if(stale&&j.bot&&j.bot.running){w.hidden=false;w.textContent="資料已超過 "+((j.positions||[]).length?2:6)+" 分鐘沒有更新，畫面可能不是最新。"}else w.hidden=true;
+ $("foot").innerHTML="最後更新 "+String(j.updated).replace("T"," ").slice(0,19)+" (America/Toronto) · 每 15 秒自動刷新<br>真錢帳戶 · 數據由機械人自動推送，不含任何金鑰";}
+function renderPos(j){const a=j.positions||[];
+ if(!a.length){$("v-pos").innerHTML=`<div class="card empty">目前空倉，等待 15 分鐘 / 4 小時趨勢訊號<br><span style="font-size:12px;color:var(--dim)">最多同時 ${j.rules.max_positions} 張 · 止蝕全部掛在交易所</span></div>`;return}
+ $("v-pos").innerHTML=a.map(p=>{let pos=null;if(p.entry&&p.stop&&p.mark){const d=Math.abs(p.entry-p.stop),lo=p.side==="long"?p.stop:p.entry+2*d,hi=p.side==="long"?p.entry+2*d:p.stop;pos=p.side==="long"?(p.mark-lo)/(hi-lo):(lo-p.mark)/(lo-hi);pos=Math.max(0,Math.min(1,pos))*100}
+  return`<div class="card pc ${p.side}"><div class="pc-h"><div><div class="sym">${p.symbol}<span style="color:var(--mut);font-size:12px;font-weight:500"> USDT 永續</span></div>
+  <div class="tags"><span class="tag ${p.side}">${sideZh(p.side)}</span><span class="tag">逐倉 ${p.lev||"—"}×</span><span class="tag">${p.style==="TREND4H"?"4小時趨勢":"15分鐘趨勢"}</span>${p.trailing?'<span class="tag" style="color:var(--acc)">止蝕已上移</span>':""}</div></div>
+  <div class="pnl"><div class="v num ${cl(p.upnl)}">${S(p.upnl)}</div><div class="s num ${cl(p.upnl)}">${P(p.roe_pct)} ROE</div></div></div>
+  ${pos==null?"":`<div class="ladder"><div class="e"></div><div class="m" style="left:${pos}%"></div></div><div class="lg"><span>止蝕</span><span>入場</span><span>+2R</span></div>`}
+  <div class="pf"><div><div class="k">入場價</div><div class="x num">${px(p.entry)}</div></div><div><div class="k">標記價</div><div class="x num">${px(p.mark)}</div></div>
+  <div><div class="k">止蝕價 · 距離</div><div class="x num">${px(p.stop)}<span style="color:var(--mut)"> ${p.stop_dist_pct==null?"":p.stop_dist_pct+"%"}</span></div></div>
+  <div><div class="k">強平價（估）</div><div class="x num">${px(p.liq_est)}</div></div>
+  <div><div class="k">倉位價值</div><div class="x num">$${F(p.notional)}</div></div><div><div class="k">保證金</div><div class="x num">$${F(p.margin)}</div></div>
+  <div><div class="k">止蝕時虧損</div><div class="x num dn">−$${F(p.risk_usd)}</div></div><div><div class="k">持倉時間</div><div class="x num">${dur(p.held_min)}</div></div></div></div>`}).join("")}
+function renderHist(j){const t=[...(j.trades||[])].reverse();
+ if(!t.length){$("v-hist").innerHTML='<div class="card empty">還沒有已平倉的單。第一張平倉後會顯示在這裡。</div>';return}
+ $("v-hist").innerHTML=`<div class="tw"><table><thead><tr><th>平倉時間</th><th>合約</th><th>槓桿</th><th>入場價</th><th>淨盈虧</th><th>ROE</th><th>持倉</th><th>手續費</th><th>原因</th></tr></thead><tbody>`+
+ t.map(r=>`<tr><td class="num">${tm(r.ts)}</td><td><b>${r.symbol}</b> <span class="${r.side==="long"?"up":"dn"}">${sideZh(r.side)}</span></td><td class="num">${r.lev?r.lev+"×":"—"}</td><td class="num">${px(r.entry)}</td>
+ <td class="num ${cl(r.pnl)}">${S(r.pnl)}</td><td class="num ${cl(r.roe_pct)}">${P(r.roe_pct)}</td><td class="num">${dur(r.held_min)}</td><td class="num">${F(r.fees)}</td><td>${why(r.reason)}</td></tr>`).join("")+"</tbody></table></div>"}
+function renderBars(j){const t=j.trades||[];
+ if(!t.length){$("v-bars").innerHTML='<div class="card empty">有平倉紀錄後，這裡會顯示每單盈虧和累計已實現曲線。</div>';return}
+ const W=640,H=150,n=Math.min(t.length,50),a=t.slice(-n),m=Math.max(...a.map(r=>Math.abs(r.pnl||0)),1),bw=(W-20)/n,mid=H/2;
+ const bars=a.map((r,i)=>{const h=Math.abs(r.pnl||0)/m*(mid-8);const c=(r.pnl||0)>=0?"var(--up)":"var(--dn)";return`<rect x="${10+i*bw+1}" y="${(r.pnl||0)>=0?mid-h:mid}" width="${Math.max(bw-2,1)}" height="${Math.max(h,1)}" rx="1.5" fill="${c}"/>`}).join("");
+ const cr=j.cum_realized||[],cm=Math.max(...cr.map(r=>Math.abs(r.cum)),1),
+ line=cr.slice(-n).map((r,i,arr)=>(i?"L":"M")+(10+i*(W-20)/Math.max(arr.length-1,1)).toFixed(1)+","+(70-r.cum/cm*55).toFixed(1)).join("");
+ $("v-bars").innerHTML=`<div class="card"><div class="lbl">最近 ${n} 單淨盈虧</div><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:150px"><line x1="0" x2="${W}" y1="${mid}" y2="${mid}" stroke="#2b3139"/>${bars}</svg></div>
+ <div class="card" style="margin-top:12px"><div class="lbl">累計已實現盈虧</div><svg viewBox="0 0 ${W} 140" preserveAspectRatio="none" style="height:140px"><line x1="0" x2="${W}" y1="70" y2="70" stroke="#2b3139"/><path d="${line}" fill="none" stroke="var(--acc)" stroke-width="2"/></svg></div>`}
+function renderRisk(j){const r=j.rules,eq=j.equity,sod=eq-j.pnl_today,lim=sod*r.daily_stop_pct/100,used=Math.max(0,-j.pnl_today),k=r.kill_equity,room=Math.max(0,(eq-k)/(Math.max(j.baseline-k,1))*100);
+ $("v-risk").innerHTML=`<div class="card rg">
+ <div><div class="lbl">槓桿三檔</div><div class="v num">10× / 15× / 20×</div><div class="s">一般 / 兩框對齊 / 三框對齊+A 級</div></div>
+ <div><div class="lbl">單筆風險</div><div class="v num">2% / 2.5% / 3%</div><div class="s">保證金最少 ${r.min_margin_pct}% 權益</div></div>
+ <div><div class="lbl">同時持倉</div><div class="v num">最多 ${r.max_positions}</div><div class="s">每張單交易所止蝕保護</div></div>
+ <div><div class="lbl">出場</div><div class="v">1R 平半 + 移動止蝕</div><div class="s">盤整市 1.5R 全平</div></div>
+ <div style="grid-column:1/-1"><div class="lbl">每日止蝕 −${r.daily_stop_pct}%（今日已用 $${F(used)} / $${F(lim)}）</div><div class="bar"><i style="width:${Math.min(100,lim?used/lim*100:0)}%;background:var(--dn)"></i></div></div>
+ <div style="grid-column:1/-1"><div class="lbl">距離停機線 $${F(k,0)}：還有 $${F(Math.max(0,eq-k))} 緩衝</div><div class="bar"><i style="width:${Math.min(100,room)}%;background:var(--up)"></i></div></div></div>`}
+async function tick(){try{const r=await fetch("data.json?ts="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;render(await r.json())}catch(e){const w=$("warn");w.hidden=false;w.textContent="暫時讀不到最新資料，保留上一次畫面。"}}
+$("per").onclick=e=>{const b=e.target.closest("button");if(!b)return;period=+b.dataset.p;[...$("per").children].forEach(x=>x.classList.toggle("on",x===b));draw()};
+$("tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;tab=b.dataset.t;[...$("tabs").children].forEach(x=>x.classList.toggle("on",x===b));["pos","hist","bars","risk"].forEach(k=>$("v-"+k).hidden=k!==tab)};
+$("clr").onclick=()=>{const r=document.body.classList.toggle("rev");localStorage.setItem("rev",r?"1":"");$("clr").textContent=r?"紅漲綠跌":"綠漲紅跌"};
+if(localStorage.getItem("rev")){document.body.classList.add("rev");$("clr").textContent="紅漲綠跌"}
+addEventListener("resize",draw);document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick()});
+tick();setInterval(tick,15000);
+</script>
+</body>
+</html>
